@@ -28,9 +28,22 @@ module Netstat
 
   def self.read_tcp
     sockets = []
+
     File.readlines(procfile)[1..-1].each do |line|
       sockets << Netstat::Socket.parse_proc_line(line)
     end
+
+    Dir.glob("/proc/[1-9]*/fd/[1-9]*") do |dir|
+      begin
+        if socket = sockets.detect {|s| s.inode == File.stat(dir).ino}
+          socket.pid = dir.split("/")[2]
+          socket.programname = File.open("/proc/" + socket.pid + "/cmdline").
+                                    read.split("/").last.split(".")[0]
+        end
+      rescue Errno::ENOENT
+      end
+    end
+
     sockets
   end
 end

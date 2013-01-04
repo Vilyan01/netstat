@@ -2,7 +2,7 @@ module Netstat
   class Socket
     attr_accessor :remote_address, :remote_address_quad, :remote_port,
                   :local_address, :local_address_quad, :local_port,
-                  :state
+                  :state, :inode, :pid, :programname
 
     def initialize(attrs)
       attrs.each do |attr, value|
@@ -21,8 +21,10 @@ module Netstat
         :local_address       => localaddr,
         :local_address_quad  => [localaddr].pack("H*").unpack("C*").reverse.join("."),
         :local_port          => localport.to_i(16),
-        :state               => Netstat.tcp_states[splitline[3]]
+        :state               => Netstat.tcp_states[splitline[3]],
+        :inode               => splitline[9].to_i
       }
+
       new(socket)
     end
   end
